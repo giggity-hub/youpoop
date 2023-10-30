@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .svg{
+        background:rgb(116, 0, 0);
+        width: 100%;
+        height: 100%;
+    }
+
+    @keyframes poop-animation {
+        from{
+            transform: rotateZ(0) scale(1);
+        }
+        to{
+            transform: rotateZ(var(--rotation-amount)) scale(var(--scale-amount));
+        }
+    }
+
+    @keyframes fadeout{
+        70%{
+            opacity: 1;
+        }
+        100%{
+            opacity: 0;
+        }
+    }
+
+    .poop{
+        transform-origin: center;
+        transform-box: fill-box;
+        animation-name: poop-animation, fadeout;
+        animation-duration: var(--duration);
+        animation-fill-mode: forwards;
+
+        
+    }
+
+</style>
+<body>
+    <svg id="svg" class="svg"  viewBox="0 0 160 90">
+
+    </svg>
+
+    <script>
+        function randomIntBetween(min, max){
+            return parseInt(Math.random() * (max - min) + min);
+        }
+
+        function randomFloatBetween(min, max){
+            return Math.random() * (max - min) + min;
+        }
+
+        function getNthFart(n){
+            const url = `./audios/${n}.wav`
+            const audio = new Audio(url)
+            return audio
+        }
+
+        function createPoopTextNode(coordinates, duration){
+            const [x,y] = coordinates;
+            const imageNode = document.createElementNS('http://www.w3.org/2000/svg', 'image')
+            // imageNode.textContent = "💩";
+            const href = "./poop.png"
+            imageNode.classList.add('poop')
+            imageNode.setAttribute('href', href)
+            imageNode.setAttribute('x', x)
+            imageNode.setAttribute('y', y)
+            imageNode.setAttribute('width', 10)
+            imageNode.setAttribute('height', 10)
+
+            // const duration = randomFloatBetween(0.1,3) + 's';
+
+            imageNode.style.setProperty('--duration', duration + 's');
+
+            const rotationAmount = randomFloatBetween(360, 720) + 'deg';
+            imageNode.style.setProperty('--rotation-amount', rotationAmount)
+
+            const scaleAmount = randomFloatBetween(1.2, 1.6)
+            imageNode.style.setProperty('--scale-amount', scaleAmount)
+
+            imageNode.addEventListener('animationend', ()=> imageNode.remove())
+
+            return imageNode
+        }
+
+        const width = 160;
+        const height = 90;
+
+        function getRandomPoint(){
+            const x = randomFloatBetween(0, width)
+            const y = randomFloatBetween(0, height)
+            return [x,y]
+        }
+
+        const $svg = document.getElementById('svg')
+
+        const activeAudioPlayers = new Set()
+
+        // browser.runtime.getURL("images/my-image.png");
+        function poop(){
+            //get random audio
+            const numberOfAudioFiles = 5;
+            const audioFileIndex = randomIntBetween(0,numberOfAudioFiles)
+            const fartAudio = getNthFart(audioFileIndex)
+            fartAudio.onended = ()=>{
+                activeAudioPlayers.delete(fartAudio)
+            }
+
+            const coordinates = getRandomPoint()
+            
+            fartAudio.onloadedmetadata = ()=>{
+                activeAudioPlayers.add(fartAudio)
+                console.log(fartAudio.duration)
+                const $poop = createPoopTextNode(coordinates, fartAudio.duration)
+                $svg.append($poop)
+                fartAudio.play()
+            }
+            
+            
+            
+
+
+        }
+
+        // document.querySelector('svg').addEventListener('click', poop)
+
+
+
+        let isPoopActive = false;
+
+        function poopNonStop(){
+            if (isPoopActive) {
+                poop()
+                const timeout = randomFloatBetween(1000, 2000)
+                window.setTimeout(poopNonStop, timeout)
+            }
+        }
+
+        function activatePoop(){
+            isPoopActive = true;
+            poopNonStop()
+        }
+
+        function deactivatePoop(){
+            isPoopActive = false;
+            //make visibility hidden
+            activeAudioPlayers.forEach(audio=> {
+                audio.stop()
+            })
+            activeAudioPlayers.clear()
+        }
+    </script>
+</body>
+</html>

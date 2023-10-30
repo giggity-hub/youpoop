@@ -1,0 +1,36 @@
+#youpoop{
+    background:rgba(84, 32, 32, 0.5);
+    position: absolute;
+    z-index: 36;
+    top:0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+@keyframes poop-animation {
+    from{
+        transform: rotateZ(0) scale(1);
+    }
+    to{
+        transform: rotateZ(var(--rotation-amount)) scale(var(--scale-amount));
+    }
+}
+
+@keyframes fadeout{
+    70%{
+        opacity: 1;
+    }
+    100%{
+        opacity: 0;
+    }
+}
+
+.poop{
+    transform-origin: center;
+    transform-box: fill-box;
+    animation-name: poop-animation, fadeout;
+    animation-duration: var(--duration);
+    animation-fill-mode: forwards;
+
+    
+}
